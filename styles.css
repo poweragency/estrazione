@@ -256,16 +256,16 @@ button { font-family: inherit; }
 }
 
 /* ===================== ANIMAZIONE DI VOLO ===================== */
-/* overlay che oscura lo sfondo mentre il logo è al centro */
+/* overlay che oscura (molto) lo sfondo mentre il logo è al centro */
 .flash-overlay {
   position: fixed; inset: 0; z-index: 900;
   pointer-events: none; opacity: 0;
-  transition: opacity .35s ease;
+  transition: opacity .5s ease;
   background:
-    radial-gradient(circle at 50% 50%, rgba(58,160,255,0.10) 0%, transparent 28%),
-    radial-gradient(circle at 50% 50%, transparent 24%, rgba(4, 7, 16, 0.62) 80%);
+    radial-gradient(circle at 50% 48%, rgba(70, 130, 220, 0.12) 0%, transparent 22%),
+    radial-gradient(circle at 50% 48%, transparent 12%, rgba(1, 2, 6, 0.90) 72%);
 }
-.flash-overlay.on { opacity: 1; }
+.flash-overlay.on { opacity: 1; backdrop-filter: blur(4px) saturate(.65); }
 
 /* il logo che vola */
 .flyer {
@@ -308,7 +308,107 @@ button { font-family: inherit; }
       0 0 190px 56px rgba(124, 92, 255, 0.52);
   }
 }
+/* riflesso di luce che scorre sul logo */
+.flyer.lit::after {
+  content: "";
+  position: absolute; inset: 0;
+  background: linear-gradient(115deg, transparent 32%, rgba(255, 255, 255, 0.55) 50%, transparent 68%);
+  transform: translateX(-160%);
+  animation: shimmer 2.8s ease-in-out infinite;
+}
+@keyframes shimmer {
+  0%   { transform: translateX(-160%); }
+  55%  { transform: translateX(160%); }
+  100% { transform: translateX(160%); }
+}
+
+/* ===================== STAGE / EFFETTI SPECIALI ===================== */
+.stage {
+  position: fixed; inset: 0; z-index: 950;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity .55s ease;
+}
+.stage.on { opacity: 1; }
+
+/* raggi di luce rotanti dietro al logo */
+.stage .rays {
+  position: absolute; left: 50%; top: 50%;
+  width: 1100px; height: 1100px;
+  background: repeating-conic-gradient(from 0deg,
+    rgba(150, 200, 255, 0.16) 0deg 5deg,
+    transparent 5deg 22deg);
+  -webkit-mask: radial-gradient(circle, #000 8%, rgba(0,0,0,.35) 30%, transparent 60%);
+          mask: radial-gradient(circle, #000 8%, rgba(0,0,0,.35) 30%, transparent 60%);
+  filter: blur(.5px);
+  animation: spinCentered 26s linear infinite;
+}
+.stage .rays.rev { animation-duration: 38s; animation-direction: reverse; opacity: .6; }
+
+/* alone luminoso pulsante */
+.stage .halo {
+  position: absolute; left: 50%; top: 50%;
+  width: 560px; height: 560px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(90, 160, 255, 0.32) 0%, rgba(124, 92, 255, 0.14) 38%, transparent 66%);
+  filter: blur(10px);
+  animation: haloPulse 2.6s ease-in-out infinite;
+}
+@keyframes spinCentered {
+  from { transform: translate(-50%, -50%) rotate(0deg); }
+  to   { transform: translate(-50%, -50%) rotate(360deg); }
+}
+@keyframes haloPulse {
+  0%, 100% { opacity: .5;  transform: translate(-50%, -50%) scale(1); }
+  50%      { opacity: .95; transform: translate(-50%, -50%) scale(1.14); }
+}
+
+/* scintille in orbita */
+.stage .sparks { position: absolute; left: 50%; top: 50%; width: 0; height: 0; }
+.stage .orbit {
+  position: absolute; left: 0; top: 0; width: 0; height: 0;
+  transform-origin: 0 0;
+  animation: spinOrbit var(--d, 9s) linear infinite;
+  animation-delay: var(--delay, 0s);
+}
+.stage .orbit.rev { animation-direction: reverse; }
+.stage .spark {
+  position: absolute;
+  width: var(--s, 7px); height: var(--s, 7px);
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 10px 2px var(--c, #8fc6ff), 0 0 22px 6px var(--c, #8fc6ff);
+  transform: translate(var(--r, 220px), 0);
+  animation: twinkle 1.7s ease-in-out infinite;
+  animation-delay: var(--td, 0s);
+}
+@keyframes spinOrbit { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+@keyframes twinkle {
+  0%, 100% { opacity: .25; }
+  50%      { opacity: 1; }
+}
+
+/* targhetta con il nome della squadra */
+.stage .nameplate {
+  position: absolute;
+  left: 50%; top: calc(50% + 170px);
+  transform: translate(-50%, 14px);
+  text-align: center;
+  opacity: 0;
+  transition: opacity .5s ease, transform .5s ease;
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+}
+.stage.on .nameplate { opacity: 1; transform: translate(-50%, 0); transition-delay: .35s; }
+.nameplate .np-kicker {
+  font-size: 13px; letter-spacing: 5px; text-transform: uppercase;
+  color: var(--gC); font-weight: 700;
+  text-shadow: 0 0 14px rgba(255, 206, 90, 0.5);
+}
+.nameplate .np-name {
+  font-size: clamp(26px, 5vw, 44px); font-weight: 800; color: #fff; line-height: 1.05;
+  max-width: min(90vw, 820px); padding: 0 16px;
+  text-shadow: 0 0 24px rgba(120, 190, 255, 0.65), 0 4px 30px rgba(0, 0, 0, 0.7);
+}
 
 @media (prefers-reduced-motion: reduce) {
-  .flash-overlay, .flyer { display: none !important; }
+  .flash-overlay, .flyer, .stage { display: none !important; }
 }

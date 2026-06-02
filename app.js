@@ -242,13 +242,49 @@ function buildSkeleton() {
 const prefersReduced = window.matchMedia &&
   window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-// overlay riutilizzabile per oscurare lo sfondo durante il volo
+// overlay scuro riutilizzabile
 const overlay = document.createElement("div");
 overlay.className = "flash-overlay";
 document.body.appendChild(overlay);
-let flights = 0;
-function overlayOn()  { flights++; overlay.classList.add("on"); }
-function overlayOff() { flights = Math.max(0, flights - 1); if (!flights) overlay.classList.remove("on"); }
+
+// "stage" con gli effetti speciali (raggi, alone, scintille, nome)
+const stage = document.createElement("div");
+stage.className = "stage";
+const SPARKS = [
+  { r: 210, s: 8, d: 9,  delay: 0,    td: 0,   c: "#8fc6ff", rev: false },
+  { r: 250, s: 6, d: 12, delay: -3,   td: 0.3, c: "#ffce5a", rev: true  },
+  { r: 190, s: 5, d: 7,  delay: -1.5, td: 0.6, c: "#b06bff", rev: false },
+  { r: 280, s: 7, d: 14, delay: -6,   td: 0.2, c: "#34d399", rev: true  },
+  { r: 230, s: 5, d: 10, delay: -4,   td: 0.9, c: "#ffffff", rev: false },
+  { r: 300, s: 6, d: 16, delay: -8,   td: 0.5, c: "#8fc6ff", rev: true  },
+  { r: 170, s: 4, d: 8,  delay: -2,   td: 0.1, c: "#d6ecff", rev: false },
+];
+const orbitsHTML = SPARKS.map(p =>
+  `<span class="orbit${p.rev ? " rev" : ""}" style="--d:${p.d}s;--delay:${p.delay}s;">` +
+    `<i class="spark" style="--r:${p.r}px;--s:${p.s}px;--c:${p.c};--td:${p.td}s;"></i>` +
+  `</span>`
+).join("");
+stage.innerHTML =
+  `<div class="rays"></div>` +
+  `<div class="rays rev"></div>` +
+  `<div class="halo"></div>` +
+  `<div class="sparks">${orbitsHTML}</div>` +
+  `<div class="nameplate"><span class="np-kicker">Settimo Cup</span><span class="np-name"></span></div>`;
+document.body.appendChild(stage);
+const nameEl = stage.querySelector(".np-name");
+
+// "riflettore": overlay scuro + stage, con conteggio per i voli sovrapposti
+let spot = 0;
+function spotOn(name) {
+  spot++;
+  if (name) nameEl.textContent = name;
+  overlay.classList.add("on");
+  stage.classList.add("on");
+}
+function spotOff() {
+  spot = Math.max(0, spot - 1);
+  if (!spot) { overlay.classList.remove("on"); stage.classList.remove("on"); }
+}
 
 function placeChip(id, g) {
   const card = chipNode(id, groupBody[g].children.length + 1);
@@ -257,15 +293,22 @@ function placeChip(id, g) {
   return card;
 }
 
-// durata totale del volo (ms). La sosta al centro occupa la fascia 0.17–0.82
-const FLIGHT = 3600;
+// fasi del volo (ms): andata, sosta al centro, ritorno
+const FLY_IN = 700;
+const HOLD = 7000;          // sosta cinematografica al centro
+const FLY_OUT = 900;
+const FLIGHT = FLY_IN + HOLD + FLY_OUT;
+const oin = FLY_IN / FLIGHT;            // offset di arrivo al centro
+const oout = (FLY_IN + HOLD) / FLIGHT;  // offset di partenza dal centro
+const oAt = ms => (FLY_IN + ms) / FLIGHT;   // offset a "ms" dall'arrivo al centro
 
 // trasformazione del flyer: prospettiva + traslazione + scala + tilt 3D
-function tf(tx, ty, scale, ry, rz) {
-  return `perspective(900px) translate(${tx}px, ${ty}px) scale(${scale}) rotateY(${ry}deg) rotateZ(${rz}deg)`;
+function tf(tx, ty, scale, rx, ry, rz) {
+  return `perspective(1000px) translate(${tx}px, ${ty}px) scale(${scale}) ` +
+         `rotateX(${rx}deg) rotateY(${ry}deg) rotateZ(${rz}deg)`;
 }
 
-// vola: icona -> centro schermo (sosta cinematografica) -> posto nel girone
+// vola: icona -> centro schermo (sosta di 7s con effetti) -> posto nel girone
 function flyToGroup(btn, id, g) {
   const logoEl = btn.querySelector(".logo");
   const startRect = logoEl.getBoundingClientRect();
@@ -288,7 +331,7 @@ function flyToGroup(btn, id, g) {
   flyer.style.height = startRect.height + "px";
   flyer.innerHTML = inner;
   document.body.appendChild(flyer);
-  overlayOn();
+  spotOn(TEAM_BY_ID[id].name);
 
   // spostamenti del centro del logo (transform-origin: center)
   const scx = startRect.left + startRect.width / 2;
@@ -300,26 +343,28 @@ function flyToGroup(btn, id, g) {
   const endScale = endRect.width / startRect.width;
   const big = Math.max(2.0, Math.min(2.8, 175 / startRect.width));
 
-  // sine in-out per un movimento morbido e "fluttuante"
-  const sine = "cubic-bezier(.37,0,.63,1)";
+  const sine = "cubic-bezier(.37,0,.63,1)";   // movimento morbido "fluttuante"
 
   const anim = flyer.animate([
-    { transform: tf(0, 0, 1, 0, 0), offset: 0 },
+    { transform: tf(0, 0, 1, 0, 0, 0), offset: 0 },
     // arrivo al centro con leggero overshoot elegante
-    { transform: tf(cx, cy, big, 0, 0), offset: 0.17, easing: "cubic-bezier(.16,.78,.22,1.08)" },
-    // --- sosta cinematografica: tilt 3D, dondolio, respiro di scala ---
-    { transform: tf(cx,      cy - 12, big * 1.05,  18,  2.5), offset: 0.30, easing: sine },
-    { transform: tf(cx + 6,  cy + 8,  big * 0.99, -16, -2.5), offset: 0.44, easing: sine },
-    { transform: tf(cx - 4,  cy - 10, big * 1.06,  13,  2),   offset: 0.58, easing: sine },
-    { transform: tf(cx + 4,  cy + 6,  big * 1.00, -10, -1.5), offset: 0.70, easing: sine },
-    // si ricompone dritto prima di ripartire
-    { transform: tf(cx, cy, big, 0, 0), offset: 0.82, easing: "cubic-bezier(.5,0,.5,1)" },
+    { transform: tf(cx, cy, big, 0, 0, 0), offset: oin, easing: "cubic-bezier(.16,.78,.22,1.06)" },
+    // --- sosta cinematografica (7s): tilt 3D multiasse, dondolio, respiro ---
+    { transform: tf(cx,     cy - 14, big * 1.05,  6,  16,  2),   offset: oAt(750),  easing: sine },
+    { transform: tf(cx + 8, cy + 10, big * 0.99, -5, -14, -2),   offset: oAt(1650), easing: sine },
+    { transform: tf(cx - 6, cy - 12, big * 1.06,  7,  12,  1.5), offset: oAt(2550), easing: sine },
+    { transform: tf(cx + 6, cy + 8,  big * 1.00, -6, -16, -2),   offset: oAt(3450), easing: sine },
+    { transform: tf(cx - 2, cy - 10, big * 1.05,  5,  14,  2),   offset: oAt(4350), easing: sine },
+    { transform: tf(cx - 4, cy + 10, big * 1.00, -7, -12, -1.5), offset: oAt(5250), easing: sine },
+    { transform: tf(cx + 2, cy - 6,  big * 1.03,  4,  8,   1),   offset: oAt(6150), easing: sine },
+    // si ricompone perfettamente dritto prima di ripartire
+    { transform: tf(cx, cy, big, 0, 0, 0), offset: oout, easing: "cubic-bezier(.5,0,.5,1)" },
     // discesa elegante nel girone
-    { transform: tf(ex, ey, endScale, 0, 0), offset: 1, easing: "cubic-bezier(.45,0,.25,1)" },
+    { transform: tf(ex, ey, endScale, 0, 0, 0), offset: 1, easing: "cubic-bezier(.5,0,.22,1)" },
   ], { duration: FLIGHT, fill: "forwards" });
 
-  // attenua bagliore e overlay quando il logo lascia il centro
-  setTimeout(() => { flyer.classList.remove("lit"); overlayOff(); }, FLIGHT * 0.80);
+  // spegne riflettore ed effetti quando il logo lascia il centro
+  setTimeout(() => { flyer.classList.remove("lit"); spotOff(); }, FLY_IN + HOLD);
 
   const finish = () => {
     card.style.visibility = "";
