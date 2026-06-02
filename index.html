@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Settimo Cup — Sorteggio Gironi</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- ===================== HEADER ===================== -->
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark">🏆</span>
+      <div class="brand-text">
+        <strong>Settimo Cup</strong>
+        <small>Sorteggio dei gironi</small>
+      </div>
+    </div>
+    <div class="topbar-actions">
+      <span id="assigned-count" class="counter">0 / 0 assegnate</span>
+      <button id="btn-undo" class="btn" title="Annulla l'ultima squadra inserita">↶ Annulla</button>
+      <button id="btn-reset" class="btn danger" title="Riporta tutte le squadre in basso">Reset</button>
+    </div>
+  </header>
+
+  <!-- ===================== GIRONI ===================== -->
+  <main class="groups" id="groups"></main>
+
+  <!-- ===================== FILA SQUADRE ===================== -->
+  <footer class="dock">
+    <div class="dock-label">
+      <span>Squadre da sorteggiare</span>
+      <small id="next-hint">Prossima → Girone A</small>
+    </div>
+    <div class="dock-scroll" id="pool"></div>
+  </footer>
+
+</body>
+<script src="app.js" defer></script>
+</html>
