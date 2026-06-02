@@ -257,7 +257,15 @@ function placeChip(id, g) {
   return card;
 }
 
-// vola: icona -> centro schermo (illuminata) -> posto nel girone
+// durata totale del volo (ms). La sosta al centro occupa la fascia 0.17–0.82
+const FLIGHT = 3600;
+
+// trasformazione del flyer: prospettiva + traslazione + scala + tilt 3D
+function tf(tx, ty, scale, ry, rz) {
+  return `perspective(900px) translate(${tx}px, ${ty}px) scale(${scale}) rotateY(${ry}deg) rotateZ(${rz}deg)`;
+}
+
+// vola: icona -> centro schermo (sosta cinematografica) -> posto nel girone
 function flyToGroup(btn, id, g) {
   const logoEl = btn.querySelector(".logo");
   const startRect = logoEl.getBoundingClientRect();
@@ -265,8 +273,11 @@ function flyToGroup(btn, id, g) {
 
   btn.remove();                              // l'icona lascia subito la fila
 
-  const card = placeChip(id, g);             // card di arrivo (nascosta, per misurare)
+  // card di arrivo, nascosta, solo per misurare il punto d'atterraggio
+  const seed = groupBody[g].children.length + 1;
+  const card = chipNode(id, seed);
   card.style.visibility = "hidden";
+  groupBody[g].appendChild(card);
   const endRect = card.querySelector(".logo").getBoundingClientRect();
 
   const flyer = document.createElement("div");
@@ -282,26 +293,38 @@ function flyToGroup(btn, id, g) {
   // spostamenti del centro del logo (transform-origin: center)
   const scx = startRect.left + startRect.width / 2;
   const scy = startRect.top + startRect.height / 2;
-  const c1x = window.innerWidth / 2 - scx;
-  const c1y = window.innerHeight / 2 - scy;
-  const c2x = (endRect.left + endRect.width / 2) - scx;
-  const c2y = (endRect.top + endRect.height / 2) - scy;
+  const cx = window.innerWidth / 2 - scx;          // verso il centro schermo
+  const cy = window.innerHeight / 2 - scy;
+  const ex = (endRect.left + endRect.width / 2) - scx;  // verso il girone
+  const ey = (endRect.top + endRect.height / 2) - scy;
   const endScale = endRect.width / startRect.width;
-  const bigScale = Math.max(2.0, Math.min(2.8, 175 / startRect.width));
+  const big = Math.max(2.0, Math.min(2.8, 175 / startRect.width));
+
+  // sine in-out per un movimento morbido e "fluttuante"
+  const sine = "cubic-bezier(.37,0,.63,1)";
 
   const anim = flyer.animate([
-    { transform: "translate(0px,0px) scale(1)", offset: 0 },
-    { transform: `translate(${c1x}px,${c1y}px) scale(${bigScale})`, offset: 0.32, easing: "cubic-bezier(.16,.74,.2,1)" },
-    { transform: `translate(${c1x}px,${c1y}px) scale(${bigScale})`, offset: 0.56, easing: "cubic-bezier(.6,0,.38,1)" },
-    { transform: `translate(${c2x}px,${c2y}px) scale(${endScale})`, offset: 1 },
-  ], { duration: 1150, fill: "forwards" });
+    { transform: tf(0, 0, 1, 0, 0), offset: 0 },
+    // arrivo al centro con leggero overshoot elegante
+    { transform: tf(cx, cy, big, 0, 0), offset: 0.17, easing: "cubic-bezier(.16,.78,.22,1.08)" },
+    // --- sosta cinematografica: tilt 3D, dondolio, respiro di scala ---
+    { transform: tf(cx,      cy - 12, big * 1.05,  18,  2.5), offset: 0.30, easing: sine },
+    { transform: tf(cx + 6,  cy + 8,  big * 0.99, -16, -2.5), offset: 0.44, easing: sine },
+    { transform: tf(cx - 4,  cy - 10, big * 1.06,  13,  2),   offset: 0.58, easing: sine },
+    { transform: tf(cx + 4,  cy + 6,  big * 1.00, -10, -1.5), offset: 0.70, easing: sine },
+    // si ricompone dritto prima di ripartire
+    { transform: tf(cx, cy, big, 0, 0), offset: 0.82, easing: "cubic-bezier(.5,0,.5,1)" },
+    // discesa elegante nel girone
+    { transform: tf(ex, ey, endScale, 0, 0), offset: 1, easing: "cubic-bezier(.45,0,.25,1)" },
+  ], { duration: FLIGHT, fill: "forwards" });
 
-  // attenua bagliore e overlay poco prima dell'atterraggio
-  setTimeout(() => { flyer.classList.remove("lit"); overlayOff(); }, 720);
+  // attenua bagliore e overlay quando il logo lascia il centro
+  setTimeout(() => { flyer.classList.remove("lit"); overlayOff(); }, FLIGHT * 0.80);
 
   const finish = () => {
     card.style.visibility = "";
     card.classList.add("land");
+    updateGroupCount(g);
     flyer.remove();
   };
   anim.onfinish = finish;

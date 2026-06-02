@@ -287,13 +287,26 @@ button { font-family: inherit; }
 }
 .flyer .initials { font-weight: 800; color: #cfe0ff; font-size: 20px; }
 
-/* stato "illuminato" al centro dello schermo */
+/* stato "illuminato" al centro: bagliore che pulsa dolcemente */
 .flyer.lit {
   border-color: #8fc6ff;
-  box-shadow:
-    0 0 0 5px rgba(58, 160, 255, 0.28),
-    0 0 46px 12px rgba(58, 160, 255, 0.60),
-    0 0 130px 36px rgba(124, 92, 255, 0.40);
+  animation: glowPulse 1.8s ease-in-out infinite;
+}
+@keyframes glowPulse {
+  0%, 100% {
+    border-color: #8fc6ff;
+    box-shadow:
+      0 0 0 5px rgba(58, 160, 255, 0.22),
+      0 0 44px 10px rgba(58, 160, 255, 0.52),
+      0 0 120px 32px rgba(124, 92, 255, 0.36);
+  }
+  50% {
+    border-color: #d6ecff;
+    box-shadow:
+      0 0 0 7px rgba(120, 190, 255, 0.34),
+      0 0 78px 18px rgba(120, 190, 255, 0.78),
+      0 0 190px 56px rgba(124, 92, 255, 0.52);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
