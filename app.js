@@ -238,22 +238,91 @@ function buildSkeleton() {
   updateMeta();
 }
 
+/* ------------------- Animazione di volo del logo ------------------- */
+const prefersReduced = window.matchMedia &&
+  window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+// overlay riutilizzabile per oscurare lo sfondo durante il volo
+const overlay = document.createElement("div");
+overlay.className = "flash-overlay";
+document.body.appendChild(overlay);
+let flights = 0;
+function overlayOn()  { flights++; overlay.classList.add("on"); }
+function overlayOff() { flights = Math.max(0, flights - 1); if (!flights) overlay.classList.remove("on"); }
+
+function placeChip(id, g) {
+  const card = chipNode(id, groupBody[g].children.length + 1);
+  groupBody[g].appendChild(card);
+  updateGroupCount(g);
+  return card;
+}
+
+// vola: icona -> centro schermo (illuminata) -> posto nel girone
+function flyToGroup(btn, id, g) {
+  const logoEl = btn.querySelector(".logo");
+  const startRect = logoEl.getBoundingClientRect();
+  const inner = logoEl.innerHTML;
+
+  btn.remove();                              // l'icona lascia subito la fila
+
+  const card = placeChip(id, g);             // card di arrivo (nascosta, per misurare)
+  card.style.visibility = "hidden";
+  const endRect = card.querySelector(".logo").getBoundingClientRect();
+
+  const flyer = document.createElement("div");
+  flyer.className = "flyer lit";
+  flyer.style.left = startRect.left + "px";
+  flyer.style.top = startRect.top + "px";
+  flyer.style.width = startRect.width + "px";
+  flyer.style.height = startRect.height + "px";
+  flyer.innerHTML = inner;
+  document.body.appendChild(flyer);
+  overlayOn();
+
+  // spostamenti del centro del logo (transform-origin: center)
+  const scx = startRect.left + startRect.width / 2;
+  const scy = startRect.top + startRect.height / 2;
+  const c1x = window.innerWidth / 2 - scx;
+  const c1y = window.innerHeight / 2 - scy;
+  const c2x = (endRect.left + endRect.width / 2) - scx;
+  const c2y = (endRect.top + endRect.height / 2) - scy;
+  const endScale = endRect.width / startRect.width;
+  const bigScale = Math.max(2.0, Math.min(2.8, 175 / startRect.width));
+
+  const anim = flyer.animate([
+    { transform: "translate(0px,0px) scale(1)", offset: 0 },
+    { transform: `translate(${c1x}px,${c1y}px) scale(${bigScale})`, offset: 0.32, easing: "cubic-bezier(.16,.74,.2,1)" },
+    { transform: `translate(${c1x}px,${c1y}px) scale(${bigScale})`, offset: 0.56, easing: "cubic-bezier(.6,0,.38,1)" },
+    { transform: `translate(${c2x}px,${c2y}px) scale(${endScale})`, offset: 1 },
+  ], { duration: 1150, fill: "forwards" });
+
+  // attenua bagliore e overlay poco prima dell'atterraggio
+  setTimeout(() => { flyer.classList.remove("lit"); overlayOff(); }, 720);
+
+  const finish = () => {
+    card.style.visibility = "";
+    card.classList.add("land");
+    flyer.remove();
+  };
+  anim.onfinish = finish;
+  anim.oncancel = finish;
+}
+
 /* ------------------------- Eventi ------------------------- */
-// click sulla fila -> assegna al girone (animazione di uscita, niente reload)
+// click sulla fila -> assegna al girone (con animazione di volo, niente reload)
 poolEl.addEventListener("click", (e) => {
   const btn = e.target.closest(".team-icon");
-  if (!btn || btn.classList.contains("leaving")) return;
+  if (!btn) return;
   const id = btn.dataset.id;
   const g = assign(id);            // muta lo stato subito (rotazione corretta sui click rapidi)
   if (!g) return;
   updateMeta();
-  btn.classList.add("leaving");
-  setTimeout(() => {
+  if (prefersReduced) {
     btn.remove();
-    const card = chipNode(id, groupBody[g].children.length + 1);
-    groupBody[g].appendChild(card);
-    updateGroupCount(g);
-  }, 240);
+    placeChip(id, g).classList.add("land");
+    return;
+  }
+  flyToGroup(btn, id, g);
 });
 
 // click su una squadra dentro un girone -> torna nella fila

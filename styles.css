@@ -242,14 +242,60 @@ button { font-family: inherit; }
   overflow: hidden; color: var(--txt-dim);
 }
 
-/* squadra che lascia la fila */
-.leaving { animation: flyOut .32s ease forwards !important; pointer-events: none; }
-
 @keyframes popIn {
   0% { transform: scale(.6); opacity: 0; }
   100% { transform: scale(1); opacity: 1; }
 }
-@keyframes flyOut {
-  0% { transform: scale(1); opacity: 1; }
-  100% { transform: scale(.3) translateY(-30px); opacity: 0; }
+
+/* card che "atterra" nel girone */
+.chip.land { animation: landPop .36s cubic-bezier(.2, .9, .3, 1.35); }
+@keyframes landPop {
+  0%   { transform: scale(.55); opacity: 0; }
+  60%  { transform: scale(1.08); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* ===================== ANIMAZIONE DI VOLO ===================== */
+/* overlay che oscura lo sfondo mentre il logo è al centro */
+.flash-overlay {
+  position: fixed; inset: 0; z-index: 900;
+  pointer-events: none; opacity: 0;
+  transition: opacity .35s ease;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(58,160,255,0.10) 0%, transparent 28%),
+    radial-gradient(circle at 50% 50%, transparent 24%, rgba(4, 7, 16, 0.62) 80%);
+}
+.flash-overlay.on { opacity: 1; }
+
+/* il logo che vola */
+.flyer {
+  position: fixed; z-index: 1000;
+  pointer-events: none;
+  border-radius: 18px; overflow: hidden;
+  display: grid; place-items: center;
+  background: radial-gradient(circle at 50% 35%, #2a3a66, #16223f);
+  border: 1.5px solid var(--line-strong);
+  transform-origin: center center;
+  will-change: transform;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.55);
+  transition: box-shadow .35s ease, border-color .35s ease;
+}
+.flyer img {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: contain; padding: 4px;
+}
+.flyer .initials { font-weight: 800; color: #cfe0ff; font-size: 20px; }
+
+/* stato "illuminato" al centro dello schermo */
+.flyer.lit {
+  border-color: #8fc6ff;
+  box-shadow:
+    0 0 0 5px rgba(58, 160, 255, 0.28),
+    0 0 46px 12px rgba(58, 160, 255, 0.60),
+    0 0 130px 36px rgba(124, 92, 255, 0.40);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .flash-overlay, .flyer { display: none !important; }
 }
