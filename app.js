@@ -250,13 +250,13 @@ document.body.appendChild(overlay);
 const stage = document.createElement("div");
 stage.className = "stage";
 const SPARKS = [
-  { r: 210, s: 8, d: 9,  delay: 0,    td: 0,   c: "#8fc6ff", rev: false },
+  { r: 210, s: 8, d: 9,  delay: 0,    td: 0,   c: "#e6c976", rev: false },
   { r: 250, s: 6, d: 12, delay: -3,   td: 0.3, c: "#ffce5a", rev: true  },
-  { r: 190, s: 5, d: 7,  delay: -1.5, td: 0.6, c: "#b06bff", rev: false },
-  { r: 280, s: 7, d: 14, delay: -6,   td: 0.2, c: "#34d399", rev: true  },
-  { r: 230, s: 5, d: 10, delay: -4,   td: 0.9, c: "#ffffff", rev: false },
-  { r: 300, s: 6, d: 16, delay: -8,   td: 0.5, c: "#8fc6ff", rev: true  },
-  { r: 170, s: 4, d: 8,  delay: -2,   td: 0.1, c: "#d6ecff", rev: false },
+  { r: 190, s: 5, d: 7,  delay: -1.5, td: 0.6, c: "#c9a24a", rev: false },
+  { r: 280, s: 7, d: 14, delay: -6,   td: 0.2, c: "#f7e6b6", rev: true  },
+  { r: 230, s: 5, d: 10, delay: -4,   td: 0.9, c: "#fff6e0", rev: false },
+  { r: 300, s: 6, d: 16, delay: -8,   td: 0.5, c: "#d9b24a", rev: true  },
+  { r: 170, s: 4, d: 8,  delay: -2,   td: 0.1, c: "#f0d585", rev: false },
 ];
 const orbitsHTML = SPARKS.map(p =>
   `<span class="orbit${p.rev ? " rev" : ""}" style="--d:${p.d}s;--delay:${p.delay}s;">` +
