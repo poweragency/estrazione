@@ -422,6 +422,13 @@ document.getElementById("btn-reset").addEventListener("click", () => {
   buildSkeleton();
 });
 
+/* ------------------- Anteprima (intro) ------------------- */
+const introEl = document.getElementById("intro");
+const startBtn = document.getElementById("btn-start");
+if (startBtn) {
+  startBtn.addEventListener("click", () => introEl.classList.add("hidden"));
+}
+
 /* ------------------------- Avvio ------------------------- */
 state = loadState();
 buildSkeleton();

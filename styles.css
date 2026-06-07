@@ -412,3 +412,88 @@ button { font-family: inherit; }
 @media (prefers-reduced-motion: reduce) {
   .flash-overlay, .flyer, .stage { display: none !important; }
 }
+
+/* ===================== ANTEPRIMA / INTRO ===================== */
+@keyframes intro-float {
+  0%   { transform: translateY(0)     scale(1);     }
+  50%  { transform: translateY(-18px) scale(1.015); }
+  100% { transform: translateY(0)     scale(1);     }
+}
+@keyframes intro-glow {
+  0%, 100% { filter: drop-shadow(0 16px 38px rgba(201, 162, 74, 0.16)); }
+  50%      { filter: drop-shadow(0 26px 60px rgba(201, 162, 74, 0.34)); }
+}
+@keyframes intro-start-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(201, 162, 74, 0);    }
+  50%      { box-shadow: 0 0 22px 0 rgba(201, 162, 74, 0.28); }
+}
+
+.intro {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: #000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  opacity: 1;
+  transition: opacity .6s ease, visibility .6s ease;
+}
+.intro.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+
+.intro-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 22px;
+  padding: 0 24px;
+}
+
+.intro-logo {
+  width: min(56vw, 460px);
+  height: auto;
+  animation: intro-float 4s ease-in-out infinite,
+             intro-glow  4s ease-in-out infinite;
+  will-change: transform;
+}
+
+.intro-title {
+  margin: 0;
+  font-family: "Playfair Display", Georgia, "Times New Roman", serif;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .42em;
+  padding-left: .42em;               /* compensa il letter-spacing finale */
+  font-size: clamp(18px, 3.4vw, 34px);
+  color: #c9a24a;
+}
+
+.intro-start {
+  position: absolute;
+  bottom: clamp(28px, 6vh, 60px);
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: inherit;
+  font-size: 13px;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: #e7cf9a;
+  background: rgba(201, 162, 74, 0.08);
+  border: 1px solid rgba(201, 162, 74, 0.55);
+  border-radius: 999px;
+  padding: 10px 22px;
+  cursor: pointer;
+  animation: intro-start-pulse 2.4s ease-in-out infinite;
+  transition: background .2s ease, border-color .2s ease, transform .15s ease;
+}
+.intro-start:hover {
+  background: rgba(201, 162, 74, 0.18);
+  border-color: rgba(201, 162, 74, 0.9);
+}
+.intro-start:active { transform: translateX(-50%) scale(.97); }
+
+@media (prefers-reduced-motion: reduce) {
+  .intro-logo, .intro-start { animation: none; }
+}
