@@ -17,7 +17,6 @@ const TEAM_FILES = [
   "FC Fuego.jpg",
   "FC retrocessi.jpg",
   "I legionari.jpg",
-  "I senza nome.jpg",
   "J.B.jpg",
   "MCM.jpg",
   "MN7.jpg",
