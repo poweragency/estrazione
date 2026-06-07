@@ -454,7 +454,7 @@ button { font-family: inherit; }
 }
 
 .intro-logo {
-  width: min(44vw, 360px);
+  width: min(38vw, 310px);
   height: auto;
   animation: intro-float 4s ease-in-out infinite,
              intro-glow  4s ease-in-out infinite;
@@ -464,7 +464,7 @@ button { font-family: inherit; }
 /* ---- Partnership marquee ---- */
 .intro-partners {
   width: 100%;
-  margin-top: 34px;
+  margin-top: 24px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -494,13 +494,13 @@ button { font-family: inherit; }
 .marquee:hover .marquee-track { animation-play-state: paused; }
 .sponsor {
   flex: 0 0 auto;
-  width: 150px;
-  height: 86px;
+  width: 210px;
+  height: 124px;
   background: #fff;
-  border-radius: 12px;
+  border-radius: 14px;
   display: grid;
   place-items: center;
-  padding: 9px 12px;
+  padding: 14px 18px;
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
 }
 .sponsor img {
