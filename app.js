@@ -429,6 +429,17 @@ if (startBtn) {
   startBtn.addEventListener("click", () => introEl.classList.add("hidden"));
 }
 
+// marquee loghi partner: lista duplicata per lo scorrimento senza salti
+const SPONSOR_COUNT = 15;
+const sponsorTrack = document.getElementById("sponsor-track");
+if (sponsorTrack) {
+  const cards = [];
+  for (let i = 1; i <= SPONSOR_COUNT; i++) {
+    cards.push(`<div class="sponsor"><img src="sponsor${i}.jpg" alt="Partner ${i}" loading="lazy" draggable="false"></div>`);
+  }
+  sponsorTrack.innerHTML = cards.join("") + cards.join("");
+}
+
 /* ------------------------- Avvio ------------------------- */
 state = loadState();
 buildSkeleton();

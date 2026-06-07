@@ -454,11 +454,63 @@ button { font-family: inherit; }
 }
 
 .intro-logo {
-  width: min(56vw, 460px);
+  width: min(44vw, 360px);
   height: auto;
   animation: intro-float 4s ease-in-out infinite,
              intro-glow  4s ease-in-out infinite;
   will-change: transform;
+}
+
+/* ---- Partnership marquee ---- */
+.intro-partners {
+  width: 100%;
+  margin-top: 34px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+.partners-label {
+  font-family: "Playfair Display", Georgia, serif;
+  text-transform: uppercase;
+  letter-spacing: .34em;
+  padding-left: .34em;
+  font-size: 14px;
+  color: #c9a24a;
+}
+.marquee {
+  width: 100%;
+  max-width: 1180px;
+  overflow: hidden;
+  -webkit-mask: linear-gradient(90deg, transparent 0, #000 7%, #000 93%, transparent 100%);
+          mask: linear-gradient(90deg, transparent 0, #000 7%, #000 93%, transparent 100%);
+}
+.marquee-track {
+  display: flex;
+  width: max-content;
+  gap: 18px;
+  animation: marquee 45s linear infinite;
+}
+.marquee:hover .marquee-track { animation-play-state: paused; }
+.sponsor {
+  flex: 0 0 auto;
+  width: 150px;
+  height: 86px;
+  background: #fff;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  padding: 9px 12px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+}
+.sponsor img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
 }
 
 .intro-title {
